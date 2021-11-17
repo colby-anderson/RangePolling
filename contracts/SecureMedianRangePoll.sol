@@ -1,7 +1,16 @@
+// Author: Colby Anderson
 pragma solidity ^0.6.0;
 // This is the abstract contract that contains
-// general functionality and state for range polls.
+// general functionality and state for range polls,
+// specifically about starting/ending polls and
+// locking/unlocking governance tokens.
 import "./RangePoll.sol";
+// ** UNCOMMENT LINE BELOW when testing this contract
+// with hardhat to use print statements in the form of
+// console.log
+//import "hardhat/console.sol";
+
+
 
 /*
     This contract is a range poll that is not susceptible to

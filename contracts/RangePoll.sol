@@ -1,3 +1,4 @@
+// Author: Colby Anderson
 pragma solidity ^0.6.0;
 // GovToken is a custom governance token that implements
 // IERC20. However, unlike most governance tokens, it can
@@ -6,14 +7,23 @@ import "./GovToken.sol";
 // Used for basic math operations to prevent malicious use
 // of contract.
 import "@openzeppelin/contracts/math/SafeMath.sol";
-//import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v2.3.0/contracts/math/SafeMath.sol";
+// ** UNCOMMENT LINE BELOW when testing this contract
+// with hardhat to use print statements in the form of
+// console.log
+//import "hardhat/console.sol";
+
+
+
 /*
     This contract implements general functionality
     for a range poll. It remains agnostic to how an
     actual number is voted on, and how the votes are
     tallied at the end. This abstract contract only deals
     with locking/unlocking governance tokens for a poll as
-    well as initiating polls.
+    well as initiating and ending polls. It also manages how
+    much weight users have voted with per poll. It uses a
+    specific governance token, but it can practically be swapped
+    out with any ERC20 token with a few easy modifications.
 */
 abstract contract RangePoll {
     using SafeMath for uint256;
@@ -40,10 +50,12 @@ abstract contract RangePoll {
     // election.
     mapping(address => mapping (uint256 => uint256)) _used;
     // The floor is the minimum number that can be voted on in the
-    // current range poll.
+    // current range poll. This value is set by a whitelisted address
+    // at the start of each poll.
     uint256 _floor;
     // The ceiling is the maximum number that can be voted on in the
-    // current range poll.
+    // current range poll. This value is set by a whitelisted address
+    // at the start of each poll.
     uint256 _ceiling;
     // Authorization levels for different addresses. Level 1 authorization
     // gives the users ability to start polls and give auth level 1 to
@@ -83,14 +95,15 @@ abstract contract RangePoll {
     // Lets the governance token contract register this poll
     // as a place where tokens are locked (this could be the governance
     // contract keeping a record, or just transferring the tokens to this
-    // contract)
+    // contract). Note, if the governance token was changed to a different
+    // ERC20 gov token, then this function would need to be slightly modified.
     function lock(uint256 tokens) external {
         _govToken.lock(msg.sender, tokens);
         _balances[msg.sender] = _balances[msg.sender].add(tokens);
         emit Lock(msg.sender, tokens);
     }
 
-        // Emitted during unlock where users unlock their gov Tokens
+    // Emitted during unlock where users unlock their gov Tokens
     // The user is the address
     // that locked the gov tokens and tokens is the amount of tokens
     // that were just locked.
@@ -101,10 +114,13 @@ abstract contract RangePoll {
     // contract or the voter himself can remove a voter's voting
     // power. Tokens represents the amount of weight they want
     // to decrease by. This can only be called when a poll is not
-    // currently ongoing (_live is false).
-    // Note: not really an incentive to unlock ever.
-    // Note: should try and get GovToken to be able to unlock for
-    // someone
+    // currently ongoing (_live is false). Note, if the governance
+    // token was changed to a different ERC20 gov token, then this
+    // function would need to be slightly modified.
+    // Note: not really an incentive to unlock ever if gov-token that
+    // supports ability to lock in multiple places concurrently.
+    // TODO: should try and get GovToken to be able to unlock for
+    // someone (necessary for this particular gov token to be non-exploitable)
     function unlock(address voter, uint256 tokens) public {
         require(!_live);
         require(msg.sender == voter);
@@ -122,8 +138,8 @@ abstract contract RangePoll {
 
     // startPoll starts a new range poll between the bounds of
     // floor and ceiling, meaning people can vote between these
-    // two values. Only whitelisted addresses can call this (think
-    // employees of a DAO).
+    // two values. Only whitelisted addresses can call this (example
+    // case of whitelisted addresses would be employees of a DAO).
     function startPoll(uint256 floor,uint256 ceiling) external {
         require(_auth[msg.sender] == 1);
         _floor = floor;
@@ -157,12 +173,19 @@ abstract contract RangePoll {
     // end. Some calculation methods may not need this functionality.
     function voteOp(uint256 ballot, uint256 weight) virtual internal;
 
+    // This event states what the result from the poll was after a whitelisted
+    // address ends the poll.
+    event PollResult(uint256 result);
+
     // Whitelisted user can end the current poll. This function will tally
     // the votes and do general housekeeping such as resetting some
-    // parameters.
-    event PollResult(uint256 result);
+    // parameters. Only whitelisted addresses can call this (example
+    // case of whitelisted addresses would be employees of a DAO).
+    // Note: There is an option to instead put a time lock here, so that
+    // polls last a certain set time. Then any "keeper" could end the poll,
+    // not just a whitelisted address.
     function endPoll() external returns (uint256){
-        require(_auth[msg.sender] == 1 && _live);
+        require(_live && _auth[msg.sender] == 1);
         _live = false;
         uint256 result = tally();
         emit PollResult(result);
