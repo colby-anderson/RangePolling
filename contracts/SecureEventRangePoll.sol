@@ -31,12 +31,12 @@ contract SecureEventRangePoll is RangePoll {
 
     // This represents the commit phase. It is the hash(vote + random num)
     // represented as a string, and the weight for the particular vote.
-    event Commit(bytes32[] hash, uint256 weight);
+    event Commit(bytes32 hash, uint256 weight);
 
     // Sends a commit.
     // Note: Weight calculation can either be implemented within this function
     // or implemented off-chain.
-    function commit(bytes32[] calldata hash, uint256 weight) external {
+    function commit(bytes32 hash, uint256 weight) external {
         require(_live);
         emit Commit(hash, weight);
     }

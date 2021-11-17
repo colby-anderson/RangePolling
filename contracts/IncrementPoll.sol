@@ -6,6 +6,7 @@ import "./GovToken.sol";
 // Used for basic math operations to prevent malicious use
 // of contract.
 import "@openzeppelin/contracts/math/SafeMath.sol";
+import "hardhat/console.sol";
 contract IncrementPoll {
     using SafeMath for uint256;
 // ***************************************************
@@ -30,9 +31,6 @@ contract IncrementPoll {
     // track of how much a voter has used of his total balance per
     // election.
     mapping(address => mapping (uint256 => uint256)) _used;
-    // The floor is the minimum number that can be voted on in the
-    // current range poll.
-    uint256 _start;
     // The ceiling is the maximum number that can be voted on in the
     // current range poll.
     uint256 _interval;
@@ -119,7 +117,7 @@ contract IncrementPoll {
     // employees of a DAO).
     function startPoll(uint256 start, uint256 interval) external {
         require(_auth[msg.sender] == 1);
-        _start = start;
+        _currentValue = start;
         _interval = interval;
         _live = true;
         _pollID =  _pollID.add(1);
@@ -151,13 +149,15 @@ contract IncrementPoll {
     function tally() internal returns (uint256) {
         return _currentValue;
     }
-
+    event PollResult(uint256 result);
     // Whitelisted user can end the current poll. This function will tally
     // the votes and do general housekeeping such as resetting some
     // parameters.
-    function endPoll() external{
+    function endPoll() external returns (uint256){
         require(_auth[msg.sender] == 1 && _live);
         _live = false;
-        tally();
+        uint256 result = tally();
+        emit PollResult(result);
+        return result;
     }
 }

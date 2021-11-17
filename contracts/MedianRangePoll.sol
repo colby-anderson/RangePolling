@@ -2,7 +2,7 @@ pragma solidity ^0.6.0;
 // This is the abstract contract that contains
 // general functionality and state for range polls.
 import "./RangePoll.sol";
-
+import "hardhat/console.sol";
 /*
     This contract is a range poll that is susceptible to
     tactical voting. After voters lock their tokens, they
@@ -28,7 +28,11 @@ contract MedianRangePoll is RangePoll {
     function voteOp(uint256 ballot, uint256 weight) override internal {
         _totalWeight = _totalWeight.add(weight);
         _ballots[_pollID][ballot] = _ballots[_pollID][ballot].add(weight);
-        insertionSort(ballot);
+        if (_sortedBallots.length != 0) {
+            insertionSort(ballot);
+        } else {
+            _sortedBallots.push(ballot);
+        }
     }
 
     function tally() override internal returns (uint256){

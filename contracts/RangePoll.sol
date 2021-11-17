@@ -160,10 +160,13 @@ abstract contract RangePoll {
     // Whitelisted user can end the current poll. This function will tally
     // the votes and do general housekeeping such as resetting some
     // parameters.
-    function endPoll() external{
+    event PollResult(uint256 result);
+    function endPoll() external returns (uint256){
         require(_auth[msg.sender] == 1 && _live);
         _live = false;
-        tally();
+        uint256 result = tally();
+        emit PollResult(result);
+        return result;
     }
 
     // This function is responsible for calculating the winning number

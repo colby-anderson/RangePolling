@@ -2,6 +2,7 @@ pragma solidity ^0.6.0;
 // This is the abstract contract that contains
 // general functionality and state for range polls.
 import "./RangePoll.sol";
+//import "hardhat/console.sol";
 
 /*
     This contract is a range poll that is susceptible to
@@ -36,6 +37,7 @@ contract MeanRangePoll is RangePoll {
     // Tally does general housekeeping for the end of the poll and
     // calculates the mean.
     function tally() override internal returns (uint256){
+//        console.log('twice');
         uint256 mean = _numerator.div(_denominator);
         _numerator = 0;
         _denominator = 0;

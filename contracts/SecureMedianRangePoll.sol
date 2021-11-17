@@ -59,7 +59,11 @@ contract SecureMedianRangePoll is RangePoll {
         require (_hashed[msg.sender][_pollID] == keccak256(abi.encode(ballot.add(random))));
         _totalWeight = _totalWeight.add(_used[msg.sender][_pollID]);
         _ballots[_pollID][ballot] = _ballots[_pollID][ballot].add(_used[msg.sender][_pollID]);
-        insertionSort(ballot);
+        if (_sortedBallots.length != 0) {
+            insertionSort(ballot);
+        } else {
+            _sortedBallots.push(ballot);
+        }
         emit Reveal(ballot, random);
     }
 

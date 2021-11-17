@@ -2,7 +2,7 @@ pragma solidity ^0.6.0;
 // This is the abstract contract that contains
 // general functionality and state for range polls.
 import "./RangePoll.sol";
-
+import "hardhat/console.sol";
 /*
     This contract is a range poll that is not susceptible to
     tactical voting. After voters lock their tokens, they
@@ -53,7 +53,6 @@ contract SecureMeanRangePoll is RangePoll {
     // This represents the reveal phase. It is the hash(vote + random num)
     // represented as a string.
     event Reveal(uint256 ballot, uint256 random);
-
     // Reveals the vote of a user from the commit phase.
     function reveal(uint256 ballot, uint256 random) external {
         require (ballot <= _ceiling && ballot >= _floor);
