@@ -59,6 +59,8 @@ To see how costly each of these polling strategies are (in terms of computation/
 in the link below. This link also contains recommendations about deploying these contracts and whether
 some can be ran on L1 or L2 or whether they need to be off chain all together.
 https://docs.google.com/document/d/1kd7p48bk5-wV2dE00D5SmOEio45iJJ--WdsG7DVJl7w/edit?usp=sharing
+To see how much gas each of these methods in each smart contract cost. Refer to this google sheet:
+https://docs.google.com/spreadsheets/d/1H-oZI19VDjhnS2F-I_WokHN2epi2zEu5fftTIz6lNOg/edit?usp=sharing
 
 ### Warning
 The structure of this repo was taken from 1inch's liquidity-protocol repo. So there may be some leftover remains that do not apply to this project (range polling).
