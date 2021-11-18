@@ -1,3 +1,4 @@
+// Author: Colby Anderson
 pragma solidity ^0.6.0;
 // GovToken is a custom governance token that implements
 // IERC20. However, unlike most governance tokens, it can
@@ -6,10 +7,26 @@ import "./GovToken.sol";
 // Used for basic math operations to prevent malicious use
 // of contract.
 import "@openzeppelin/contracts/math/SafeMath.sol";
-import "hardhat/console.sol";
+// ** UNCOMMENT LINE BELOW when testing this contract
+// with hardhat to use print statements in the form of
+// console.log
+//import "hardhat/console.sol";
+
+
+
+/*
+    This contract is a range poll that is susceptible to
+    tactical voting. After voters lock their tokens, they
+    can either choose to decrement or increment the current poll
+    value (after a poll starts of course). Polls are started by
+    whitelisted addresses (an example use case of the whitelisted
+    addresses would be employees of a DAO). These whitelisted
+    addresses can start the "starting point" of the poll and
+    determine how much each increment/decrement is.
+*/
 contract IncrementPoll {
     using SafeMath for uint256;
-// ***************************************************
+    // ***************************************************
     // ------------------CONTRACT STATE-------------------
     // ***************************************************
 
@@ -31,10 +48,11 @@ contract IncrementPoll {
     // track of how much a voter has used of his total balance per
     // election.
     mapping(address => mapping (uint256 => uint256)) _used;
-    // The ceiling is the maximum number that can be voted on in the
-    // current range poll.
+    // The interval is the amount that the current value can be incremented
+    // or decremented by. It is meant to be fixed and set each poll.
     uint256 _interval;
-    // The current value
+    // The current value of the poll. The starting point is chosen when the
+    // poll is first begun (by some whitelisted address).
     uint256 _currentValue;
     // Authorization levels for different addresses. Level 1 authorization
     // gives the users ability to start polls and give auth level 1 to
@@ -111,10 +129,10 @@ contract IncrementPoll {
         emit Unlock(voter, tokens);
     }
 
-    // startPoll starts a new range poll between the bounds of
-    // floor and ceiling, meaning people can vote between these
-    // two values. Only whitelisted addresses can call this (think
-    // employees of a DAO).
+    // startPoll starts a new range poll with the starting value
+    // being start. The amount at which this value can incremented/decremented
+    // by is the interval parameter. Only whitelisted addresses can
+    // call this (think employees of a DAO).
     function startPoll(uint256 start, uint256 interval) external {
         require(_auth[msg.sender] == 1);
         _currentValue = start;
@@ -123,17 +141,15 @@ contract IncrementPoll {
         _pollID =  _pollID.add(1);
     }
 
-    // Represents a vote where ballot equals the number within
-    // the range that a user voted on, and weight represents
-    // the amount of voting power associated with the vote.
+    // Represents a vote where increment is true if they incremented
+    // the current value of poll and false if they decremented it.
+    // Weight represents the amount of voting power associated with the vote.
     event Vote(bool increment, uint256 weight);
 
     // This function allows users to vote for a particular value
-    // in a live poll. The ballot represents the number that the
-    // address is voting on. It should be in between floor and ceiling
-    // The user can specify how much weight he wants to use for the
-    // particular vote. If the user does not have enough weight, as much
-    // weight will be put down as he can use.
+    // in a live poll. If increment is true, they want to increment
+    // the current value for the poll. If false, they want to decrement
+    // it.
     function vote(bool increment, uint256 weight) external {
         require(_live);
         require(_balances[msg.sender].sub(_used[msg.sender][_pollID]) >= weight);
@@ -146,10 +162,15 @@ contract IncrementPoll {
         emit Vote(increment, weight);
     }
 
+    // The current value when the poll ends will be the result.
     function tally() internal returns (uint256) {
         return _currentValue;
     }
+
+    // This event states what the result from the poll was after a whitelisted
+    // address ends the poll.
     event PollResult(uint256 result);
+
     // Whitelisted user can end the current poll. This function will tally
     // the votes and do general housekeeping such as resetting some
     // parameters.

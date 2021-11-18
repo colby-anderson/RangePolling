@@ -1,7 +1,14 @@
+// Author: Colby Anderson
 pragma solidity ^0.6.0;
 // This is the abstract contract that contains
 // general functionality and state for range polls.
 import "./RangePoll.sol";
+// ** UNCOMMENT LINE BELOW when testing this contract
+// with hardhat to use print statements in the form of
+// console.log
+//import "hardhat/console.sol";
+
+
 
 /*
     This contract is an event-driven range
@@ -35,7 +42,7 @@ contract EventRangePoll is RangePoll {
 
     // This function is intended to calculate the winning number
     // in the range by tallying the votes. However, in this case,
-    // it should be happening off-chain.
+    // it should be happening off-chain so a dummy value is returned.
     function tally() override internal returns (uint256){
         return 0;
     }

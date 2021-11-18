@@ -50,3 +50,15 @@ There are multiple range polling strategies used. Here is a list:
 - Commit/Reveal Median Polling
 - Commit/Reveal Mean Polling
 - Commit/Reveal Event-Driven Polling
+
+Explanation about the above methods is waved here. The high level details can be understood by reading the "Learn More!" section, and the low level details can be understood by reading the heavily documented code.
+
+However, here are a few notes about architecture. Most of these contracts are very similar, and therefore inherit their similar code from an abstract contract RangePolling. The idea is that these subcontracts will handle vote calculation and result calculation. However, this doesn't work perfectly, so some of the contracts override their parent functions with dummy funciton bodys. And the vote happens in some other way. This is commonly seen with the commit/reveal poll strategies. Furthermore, increment polling is quite distinct from the other strategies, so it doesn't inherit from RangePolling and is an all-in-one sorta contract. It still repeats a lot of code that RangePolling has though. 
+### Performance and Deployment
+To see how costly each of these polling strategies are (in terms of computation/storage) check out the analysis
+in the link below. This link also contains recommendations about deploying these contracts and whether
+some can be ran on L1 or L2 or whether they need to be off chain all together.
+https://docs.google.com/document/d/1kd7p48bk5-wV2dE00D5SmOEio45iJJ--WdsG7DVJl7w/edit?usp=sharing
+
+### Warning
+The structure of this repo was taken from 1inch's liquidity-protocol repo. So there may be some leftover remains that do not apply to this project (range polling).

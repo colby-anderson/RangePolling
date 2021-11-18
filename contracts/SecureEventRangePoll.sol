@@ -39,24 +39,26 @@ contract SecureEventRangePoll is RangePoll {
     function voteOp(uint256 ballot, uint256 weight) override internal {}
 
     // This represents the commit phase. It is the hash(vote + random num)
-    // represented as a string, and the weight for the particular vote.
+    // represented as a string, and the weight for the particular vote. Sha3
+    // is the specific hash function that should be used.
     event Commit(bytes32 hash, uint256 weight);
 
-    // Sends a commit.
+    // Sends a commit. Assumes there is some off-chain server listening to
+    // events from this contract.
     // Note: Weight calculation can either be implemented within this function
-    // or implemented off-chain.
+    // or implemented off-chain. Currently, the code is written as if the
+    // weight calculation should be done off-chain.
     function commit(bytes32 hash, uint256 weight) external {
         require(_live);
         emit Commit(hash, weight);
     }
 
-    // This represents the reveal phase. It is the hash(vote + random num)
-    // represented as a string.
+    // This represents the reveal phase. It is the vote and random num used
+    // in the commit phase.
     event Reveal(uint256 vote, uint256 random);
 
-    // Sends a reveal.
-    // Note: Weight calculation can either be implemented within this function
-    // or implemented off-chain.
+    // Sends a reveal. Assumes there is some off-chain server listening to
+    // events from this contract.
     function reveal(uint256 vote, uint256 random) external {
         require(_live);
         emit Reveal(vote, random);
@@ -64,7 +66,9 @@ contract SecureEventRangePoll is RangePoll {
 
     // This function is intended to calculate the winning number
     // in the range by tallying the votes. However, in this case,
-    // it should be happening off-chain.
+    // it should be happening off-chain, so the function body
+    // is just a filler to satisfy the overriding of the parent
+    // contract.
     function tally() override internal returns (uint256){
         return 0;
     }

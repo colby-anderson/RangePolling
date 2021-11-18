@@ -27,10 +27,16 @@ contract SecureMedianRangePoll is RangePoll {
     // ------------------CONTRACT STATE-------------------
     // ***************************************************
 
+    // This is a sorted list of votes from the current poll.
     uint256[] _sortedBallots;
+    // The total weight is the summed weight of all the weight
+    // the voters used when voting.
     uint256 _totalWeight;
+    // The ballots keep track of how much weight there is for
+    // each vote in each poll. It maps pollID to the vote to
+    // the amount of weight for that vote.
     mapping(uint256 => mapping(uint256 => uint256)) _ballots;
-     // represents the hashes sent by each user during the commit
+    // Represents the hashes sent by each user during the commit
     // phase
     mapping(address => mapping(uint256 => bytes32)) _hashed;
 
@@ -46,10 +52,12 @@ contract SecureMedianRangePoll is RangePoll {
     function voteOp(uint256 ballot, uint256 weight) override internal {}
 
     // This represents the commit phase. It is the hash(vote + random num)
-    // represented as a string, and the weight for the particular vote.
+    // represented as a string, and the weight for the particular vote. Sha3
+    // is the specific hash function that should be used.
     event Commit(bytes32 hash, uint256 weight);
 
-    // Sends a commit.
+    // Sends a commit. The hash of the vote is stored for later. The weight
+    // the voter used to vote with is also recorded.
     function commit(bytes32 hash, uint256 weight) external {
         require(_live);
         require(_balances[msg.sender].sub(_used[msg.sender][_pollID]) >= weight);
@@ -58,11 +66,14 @@ contract SecureMedianRangePoll is RangePoll {
         emit Commit(hash, weight);
     }
 
-    // This represents the reveal phase. It is the hash(vote + random num)
-    // represented as a string.
+    // This represents the reveal phase. It is the vote and random num used
+    // in the commit phase.
     event Reveal(uint256 ballot, uint256 random);
 
-    // Reveals the vote of a user from the commit phase.
+    // Reveals the vote of a user from the commit phase. First, the reveal
+    // is checked to be a valid reveal by hashing the input and matching it
+    // with the earlier hash the user submitted. Then, the vote is inserted
+    // into the sorted votes (_sortedBallots).
     function reveal(uint256 ballot, uint256 random) external {
         require (ballot <= _ceiling && ballot >= _floor);
         require (_hashed[msg.sender][_pollID] == keccak256(abi.encode(ballot.add(random))));
@@ -76,7 +87,12 @@ contract SecureMedianRangePoll is RangePoll {
         emit Reveal(ballot, random);
     }
 
-
+    // Tally does general housekeeping for the end of the poll and
+    // calculates the median. The median is calculated by dividing
+    // the sum of all weights the voters voted with, by 2. This is
+    // the midpoint. Then, the sorted votes must be traversed into
+    // the midpoint (according to weight) is found. The corresponding
+    // vote is the result of the poll.
     function tally() override internal returns (uint256){
         uint256 midpoint = _totalWeight.div(2);
         uint256 runningTotal = 0;
@@ -90,6 +106,9 @@ contract SecureMedianRangePoll is RangePoll {
         }
     }
 
+    // This is a basic insertion sort algorithm where the ballot
+    // is inserted into a sorted list (_sortedBallots) in the correct
+    // position.
     function insertionSort(uint256 ballot) internal {
         uint length = _sortedBallots.length;
         for (uint256 i = 0; i < length; i++) {

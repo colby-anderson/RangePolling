@@ -1,8 +1,14 @@
+// Author: Colby Anderson
 pragma solidity ^0.6.0;
 // This is the abstract contract that contains
 // general functionality and state for range polls.
 import "./RangePoll.sol";
+// ** UNCOMMENT LINE BELOW when testing this contract
+// with hardhat to use print statements in the form of
+// console.log
 //import "hardhat/console.sol";
+
+
 
 /*
     This contract is a range poll that is susceptible to
@@ -15,9 +21,12 @@ contract MeanRangePoll is RangePoll {
     // ------------------CONTRACT STATE-------------------
     // ***************************************************
 
-    // The current denominator of the formula for mean.
+    // The current denominator of the formula for mean. Namely,
+    // the sum of all weights.
     uint256 _denominator;
-    // The current numerator of the formula for mean.
+    // The current numerator of the formula for mean. Namely,
+    // (weight for voter A * vote of voter A) + (..B * ...B) ... for
+    // all voters.
     uint256 _numerator;
 
 
@@ -37,7 +46,6 @@ contract MeanRangePoll is RangePoll {
     // Tally does general housekeeping for the end of the poll and
     // calculates the mean.
     function tally() override internal returns (uint256){
-//        console.log('twice');
         uint256 mean = _numerator.div(_denominator);
         _numerator = 0;
         _denominator = 0;
