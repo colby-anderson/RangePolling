@@ -204,3 +204,34 @@ contract('EventRangePoll', function ([_, wallet1, wallet2]) {
         });
     });
 });
+
+const MinHeap = artifacts.require('MinHeap');
+const ClusteredMeanRangePoll = artifacts.require('ClusteredMeanRangePoll');
+contract('ClusteredMeanRangePoll', function ([_, wallet1, wallet2]) {
+    beforeEach(async function () {
+        this.MKR = await GovToken.new(500000);
+        this.HEAP = await MinHeap.new();
+        await this.MKR.mint(wallet1, 20000);
+        await this.MKR.mint(wallet2, 20000);
+    });
+
+    describe('Basics', async function () {
+        beforeEach(async function () {
+            this.poll = await ClusteredMeanRangePoll.new(this.MKR.address, this.HEAP.address);
+        });
+
+        it('basic', async function () {
+            await this.poll.startPoll(0, 100);
+            await this.poll.lock(50, { from: wallet1 });
+            await this.poll.lock(80, { from: wallet2 });
+            await this.poll.vote(18, 1, { from: wallet1 });
+            await this.poll.vote(50, 1, { from: wallet2 });
+            await this.poll.vote(19, 1, { from: wallet1 });
+            await this.poll.vote(52, 1, { from: wallet2 });
+            await this.poll.vote(30, 1, { from: wallet2 });
+            const mean = await this.poll.endPoll();
+            expectEvent(mean, 'PollResult',
+                { result: new BN('22') });
+        });
+    });
+});
