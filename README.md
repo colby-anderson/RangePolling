@@ -64,3 +64,6 @@ https://docs.google.com/spreadsheets/d/1H-oZI19VDjhnS2F-I_WokHN2epi2zEu5fftTIz6l
 
 ### Warning
 The structure of this repo was taken from 1inch's liquidity-protocol repo. So there may be some leftover remains that do not apply to this project (range polling).
+
+### TODO
+Clustered Mean Polling is susceptible to dos attack. There needs to be a minimum threshold for what is considered to be a vote.
