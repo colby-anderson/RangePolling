@@ -67,3 +67,4 @@ The structure of this repo was taken from 1inch's liquidity-protocol repo. So th
 
 ### TODO
 Clustered Mean Polling is susceptible to dos attack. There needs to be a minimum threshold for what is considered to be a vote.
+Secure strategies need to be edited. You should lose all governance tokens that you commit but never reveal for. This is to discourage tactical voting, as with the current scheme, someone can commit two extremes with less weight, and only reveal one.
